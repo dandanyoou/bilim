@@ -2,8 +2,10 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CATEGORY_LABEL } from "@/lib/categories";
 import { Marquee } from "@/components/marketing/Marquee";
+import { PhotoWall } from "@/components/marketing/PhotoWall";
 import { Reveal } from "@/components/motion/Reveal";
 import { TiltCard } from "@/components/motion/TiltCard";
+import { listShowcasePhotos } from "@/lib/items/queries";
 
 const PAIN_POINTS = [
   { n: "1", text: "몇 번 쓰고 서랍에 넣어둔 물건이 매번 쌓여요" },
@@ -31,28 +33,39 @@ const STEPS = [
 
 const TICKER_WORDS = ["지금 캠퍼스에 올라온 물건", ...Object.values(CATEGORY_LABEL), "대면 인계로 안전하게"];
 
-export default function Home() {
+export default async function Home() {
+  const showcasePhotos = await listShowcasePhotos();
+
   return (
     <div className="scroll-sections">
-      <section className="scroll-section flex flex-col items-center justify-center px-6 text-center">
-        <p className="mb-4 text-sm tracking-widest text-ink-soft uppercase">
-          가칭 빌림 · 캠퍼스 개인 간 물품 대여
-        </p>
-        <h1 className="font-hand text-7xl text-ink sm:text-8xl">빌림</h1>
-        <p className="mt-6 max-w-xl text-lg text-ink-soft">
-          쓰지 않는 물건은 빌려주고 돈을 벌고, 필요한 물건은 사지 않고 빌려 써요.
-          <br />
-          같은 캠퍼스 학생끼리, 하루 단위로.
-        </p>
-        <div className="mt-10 flex gap-3">
-          <ButtonLink href="/items" className="shadow-[0_0_0_0_var(--color-lime-glow)] transition-shadow hover:shadow-[0_0_24px_2px_var(--color-lime-glow)]">
-            둘러보기
-          </ButtonLink>
-          <ButtonLink href="/items/new" variant="secondary">
-            물건 등록하기
-          </ButtonLink>
+      <section className="scroll-section grid items-center gap-10 px-6 py-16 sm:py-0 lg:grid-cols-[1.1fr_1fr] lg:gap-6 lg:px-10">
+        <div className="flex flex-col items-start text-left">
+          <p className="mb-4 text-sm tracking-widest text-ink-soft uppercase">
+            가칭 빌림 · 캠퍼스 개인 간 물품 대여
+          </p>
+          <h1 className="font-hand text-7xl text-ink sm:text-8xl">빌림</h1>
+          <p className="mt-6 max-w-xl text-lg text-ink-soft">
+            쓰지 않는 물건은 빌려주고 돈을 벌고, 필요한 물건은 사지 않고 빌려 써요.
+            <br />
+            같은 캠퍼스 학생끼리, 하루 단위로.
+          </p>
+          <div className="mt-10 flex gap-3">
+            <ButtonLink
+              href="/items"
+              className="shadow-[0_0_0_0_var(--color-lime-glow)] transition-shadow hover:shadow-[0_0_24px_2px_var(--color-lime-glow)]"
+            >
+              둘러보기
+            </ButtonLink>
+            <ButtonLink href="/items/new" variant="secondary">
+              물건 등록하기
+            </ButtonLink>
+          </div>
+          <p className="mt-16 hidden text-xs text-ink-soft sm:block">
+            <span className="animate-bounce inline-block">스크롤하면 한 장씩 넘어가요 ↓</span>
+          </p>
         </div>
-        <p className="mt-16 animate-bounce text-xs text-ink-soft">스크롤하면 한 장씩 넘어가요 ↓</p>
+
+        <PhotoWall photos={showcasePhotos} />
       </section>
 
       <Marquee items={TICKER_WORDS} className="border-y border-line bg-cream-soft py-3" />

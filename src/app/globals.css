@@ -72,3 +72,37 @@ body {
     animation: none;
   }
 }
+
+/* 히어로 사진벽: 세로로 끊김 없이 흐른다. 목록을 두 벌 이어 붙여 -50%까지만 움직인다. */
+@keyframes photo-wall-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+@keyframes photo-wall-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.photo-wall-up {
+  animation-name: photo-wall-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.photo-wall-down {
+  animation-name: photo-wall-down;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-wall-up,
+  .photo-wall-down {
+    animation: none;
+  }
+}

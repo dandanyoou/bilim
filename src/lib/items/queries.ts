@@ -168,3 +168,21 @@ export async function listMyItems(ownerId: string): Promise<MyItemRow[]> {
 
   return rows.map((r) => ({ ...r, thumbnailKey: thumbByItem.get(r.id) ?? null }));
 }
+
+export interface ShowcasePhoto {
+  storageKey: string;
+  title: string;
+}
+
+/** 랜딩 히어로의 움직이는 사진벽용. 공개된 물품마다 대표 사진 한 장씩. */
+export async function listShowcasePhotos(limit = 16): Promise<ShowcasePhoto[]> {
+  return db
+    .selectFrom("itemPhotos")
+    .innerJoin("items", "items.id", "itemPhotos.itemId")
+    .select(["itemPhotos.storageKey", "items.title"])
+    .where("items.status", "=", "listed")
+    .where("itemPhotos.position", "=", 1)
+    .orderBy("items.createdAt", "desc")
+    .limit(limit)
+    .execute();
+}
