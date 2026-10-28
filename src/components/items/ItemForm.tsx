@@ -1,17 +1,10 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { CATEGORY_LABEL, ENABLED_CATEGORIES, type Category } from "@/lib/categories";
 import { Button } from "@/components/ui/Button";
-
-interface Photo {
-  file: File;
-  previewUrl: string;
-  storageKey: string | null;
-  uploading: boolean;
-}
+import { PhotoPicker, type ReadyPhoto } from "@/components/uploads/PhotoPicker";
 
 export function ItemForm() {
   const router = useRouter();
@@ -22,50 +15,15 @@ export function ItemForm() {
   const [deposit, setDeposit] = useState(50000);
   const [buyoutPrice, setBuyoutPrice] = useState(200000);
   const [pickupPlace, setPickupPlace] = useState("");
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [readyPhotos, setReadyPhotos] = useState<ReadyPhoto[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-
-  async function onPickFiles(e: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    e.target.value = "";
-    const newPhotos: Photo[] = files.map((file) => ({
-      file,
-      previewUrl: URL.createObjectURL(file),
-      storageKey: null,
-      uploading: true,
-    }));
-    setPhotos((prev) => [...prev, ...newPhotos]);
-
-    for (const photo of newPhotos) {
-      try {
-        const form = new FormData();
-        form.append("file", photo.file);
-        const res = await fetch("/api/v1/uploads", { method: "POST", body: form });
-        const body = await res.json();
-        if (!res.ok) throw new Error(body?.error?.message ?? "업로드 실패");
-        setPhotos((prev) =>
-          prev.map((p) => (p === photo ? { ...p, storageKey: body.storageKey, uploading: false } : p))
-        );
-      } catch {
-        setPhotos((prev) => prev.filter((p) => p !== photo));
-        setError("사진 업로드에 실패했어요. 다시 시도해 주세요.");
-      }
-    }
-  }
-
-  function removePhoto(target: Photo) {
-    setPhotos((prev) => prev.filter((p) => p !== target));
-  }
-
-  const readyPhotoKeys = photos.filter((p) => p.storageKey).map((p) => p.storageKey as string);
-  const stillUploading = photos.some((p) => p.uploading);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (readyPhotoKeys.length < 4) {
+    if (readyPhotos.length < 4) {
       setError("사진을 4장 이상 올려주세요.");
       return;
     }
@@ -87,7 +45,7 @@ export function ItemForm() {
           deposit,
           buyoutPrice,
           pickupPlace,
-          photoKeys: readyPhotoKeys,
+          photoKeys: readyPhotos.map((p) => p.storageKey),
         }),
       });
       const body = await res.json();
@@ -162,40 +120,13 @@ export function ItemForm() {
         />
       </Field>
 
-      <Field label={`사진(4장 이상, 지금 ${readyPhotoKeys.length}장)`}>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/heic"
-          multiple
-          onChange={onPickFiles}
-          className="w-full text-sm text-ink-soft"
-        />
-        {photos.length > 0 && (
-          <div className="mt-3 grid grid-cols-4 gap-2">
-            {photos.map((p) => (
-              <div key={p.previewUrl} className="relative aspect-square overflow-hidden rounded-lg bg-cream-soft">
-                <Image src={p.previewUrl} alt="" fill unoptimized className="object-cover" />
-                {p.uploading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-xs text-white">
-                    올리는 중…
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => removePhoto(p)}
-                  className="absolute top-1 right-1 rounded-full bg-black/60 px-1.5 text-xs text-white"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+      <Field label="사진">
+        <PhotoPicker onReadyChange={setReadyPhotos} minCount={4} />
       </Field>
 
       {error && <p className="text-sm text-danger">{error}</p>}
 
-      <Button type="submit" disabled={busy || stillUploading} className="w-full">
+      <Button type="submit" disabled={busy} className="w-full">
         {busy ? "등록하는 중…" : "등록하고 공개하기"}
       </Button>
     </form>
