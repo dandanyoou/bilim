@@ -19,6 +19,8 @@ export interface ItemListRow {
   buyoutPrice: number;
   pickupPlace: string;
   thumbnailKey: string | null;
+  /** 카드 호버 크로스페이드용으로 앞쪽 몇 장(최대 3장)을 더 들고 있는다. */
+  photoKeys: string[];
 }
 
 /** OP-03 searchItems. AC-03-1: 지정한 기간에 활성 대여가 있는 물품은 결과에서 뺀다. */
@@ -72,12 +74,17 @@ export async function listItems(filter: ItemListFilter): Promise<ItemListRow[]> 
     .orderBy("position", "asc")
     .execute();
 
-  const thumbByItem = new Map<string, string>();
+  const photosByItem = new Map<string, string[]>();
   for (const p of photos) {
-    if (!thumbByItem.has(p.itemId)) thumbByItem.set(p.itemId, p.storageKey);
+    const list = photosByItem.get(p.itemId) ?? [];
+    if (list.length < 3) list.push(p.storageKey);
+    photosByItem.set(p.itemId, list);
   }
 
-  return rows.map((r) => ({ ...r, thumbnailKey: thumbByItem.get(r.id) ?? null }));
+  return rows.map((r) => {
+    const itemPhotos = photosByItem.get(r.id) ?? [];
+    return { ...r, thumbnailKey: itemPhotos[0] ?? null, photoKeys: itemPhotos };
+  });
 }
 
 export interface ItemDetail {

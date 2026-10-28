@@ -1,6 +1,9 @@
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CATEGORY_LABEL } from "@/lib/categories";
+import { Marquee } from "@/components/marketing/Marquee";
+import { Reveal } from "@/components/motion/Reveal";
+import { TiltCard } from "@/components/motion/TiltCard";
 
 const PAIN_POINTS = [
   { n: "1", text: "몇 번 쓰고 서랍에 넣어둔 물건이 매번 쌓여요" },
@@ -26,6 +29,8 @@ const STEPS = [
   },
 ];
 
+const TICKER_WORDS = ["지금 캠퍼스에 올라온 물건", ...Object.values(CATEGORY_LABEL), "대면 인계로 안전하게"];
+
 export default function Home() {
   return (
     <div className="scroll-sections">
@@ -40,7 +45,9 @@ export default function Home() {
           같은 캠퍼스 학생끼리, 하루 단위로.
         </p>
         <div className="mt-10 flex gap-3">
-          <ButtonLink href="/items">둘러보기</ButtonLink>
+          <ButtonLink href="/items" className="shadow-[0_0_0_0_var(--color-lime-glow)] transition-shadow hover:shadow-[0_0_24px_2px_var(--color-lime-glow)]">
+            둘러보기
+          </ButtonLink>
           <ButtonLink href="/items/new" variant="secondary">
             물건 등록하기
           </ButtonLink>
@@ -48,18 +55,26 @@ export default function Home() {
         <p className="mt-16 animate-bounce text-xs text-ink-soft">스크롤하면 한 장씩 넘어가요 ↓</p>
       </section>
 
+      <Marquee items={TICKER_WORDS} className="border-y border-line bg-cream-soft py-3" />
+
       <section className="scroll-section flex flex-col items-center justify-center gap-10 px-6 py-24">
-        <h2 className="max-w-md text-center text-3xl font-bold text-ink">
-          있는데 안 쓰는 물건,
-          <br />
-          살 필요 없는 물건.
-        </h2>
+        <Reveal>
+          <h2 className="max-w-md text-center text-3xl font-bold text-ink">
+            있는데 안 쓰는 물건,
+            <br />
+            살 필요 없는 물건.
+          </h2>
+        </Reveal>
         <div className="grid gap-4 sm:grid-cols-3">
-          {PAIN_POINTS.map((p) => (
-            <Card key={p.n} className="w-64 p-6">
-              <span className="font-hand text-4xl text-accent">{p.n}</span>
-              <p className="mt-3 text-sm text-ink-soft">{p.text}</p>
-            </Card>
+          {PAIN_POINTS.map((p, i) => (
+            <Reveal key={p.n} delay={i * 0.1}>
+              <TiltCard>
+                <Card className="w-64 p-6">
+                  <span className="font-hand text-4xl text-lime">{p.n}</span>
+                  <p className="mt-3 text-sm text-ink-soft">{p.text}</p>
+                </Card>
+              </TiltCard>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -69,25 +84,29 @@ export default function Home() {
           key={step.n}
           className="scroll-section flex flex-col items-center justify-center gap-4 px-6 py-24 text-center"
         >
-          <span className="font-hand text-2xl text-accent">사용법 {step.n}</span>
-          <h3 className="max-w-md text-3xl font-bold text-ink">{step.title}</h3>
-          <p className="max-w-md text-ink-soft">{step.body}</p>
+          <Reveal className="flex flex-col items-center gap-4">
+            <span className="font-hand text-2xl text-lime">사용법 {step.n}</span>
+            <h3 className="max-w-md text-3xl font-bold text-ink">{step.title}</h3>
+            <p className="max-w-md text-ink-soft">{step.body}</p>
+          </Reveal>
         </section>
       ))}
 
       <section className="scroll-section flex flex-col items-center justify-center gap-8 px-6 py-24 text-center">
-        <h2 className="max-w-md text-3xl font-bold text-ink">1단계에서 다루는 물건</h2>
-        <div className="flex flex-wrap justify-center gap-3">
-          {Object.values(CATEGORY_LABEL).map((label) => (
-            <span
-              key={label}
-              className="rounded-full border border-line bg-white/60 px-4 py-2 text-sm text-ink-soft"
-            >
-              {label}
-            </span>
-          ))}
-        </div>
-        <ButtonLink href="/items">지금 둘러보기</ButtonLink>
+        <Reveal className="flex flex-col items-center gap-8">
+          <h2 className="max-w-md text-3xl font-bold text-ink">1단계에서 다루는 물건</h2>
+          <div className="flex flex-wrap justify-center gap-3">
+            {Object.values(CATEGORY_LABEL).map((label) => (
+              <span
+                key={label}
+                className="rounded-full border border-line bg-white/60 px-4 py-2 text-sm text-ink-soft transition-colors hover:border-lime hover:text-ink"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+          <ButtonLink href="/items">지금 둘러보기</ButtonLink>
+        </Reveal>
       </section>
     </div>
   );

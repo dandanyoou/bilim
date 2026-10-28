@@ -12,6 +12,11 @@
   --color-danger-soft: #f7e9e6;
   --color-ok: #3f6b3f;
   --color-ok-soft: #e9f1e9;
+  /* 포인트 컬러: 마리골드. "인기·활성" 같은 살아있는 상태, 호버 글로우에만 쓴다 —
+     여기저기 바르면 포인트가 아니라 배경이 된다. */
+  --color-lime: #c98f1f;
+  --color-lime-soft: #faf0d8;
+  --color-lime-glow: #e3b23c;
 }
 
 @theme inline {
@@ -26,6 +31,9 @@
   --color-danger-soft: var(--color-danger-soft);
   --color-ok: var(--color-ok);
   --color-ok-soft: var(--color-ok-soft);
+  --color-lime: var(--color-lime);
+  --color-lime-soft: var(--color-lime-soft);
+  --color-lime-glow: var(--color-lime-glow);
   --font-sans: var(--font-noto-sans-kr);
   --font-hand: var(--font-gaegu);
 }
@@ -42,4 +50,25 @@ body {
 .scroll-section {
   scroll-snap-align: start;
   min-height: 100svh;
+}
+
+/* 카테고리/상태 마키: 가로로 끊김 없이 흐른다. 같은 목록을 두 벌 이어 붙여서 루프시킨다. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 28s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
 }
