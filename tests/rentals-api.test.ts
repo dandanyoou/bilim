@@ -1,18 +1,28 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { signUp, publishItem, requestRentalApi, acceptRentalApi, type TestUser } from "./helpers";
+import { cleanupTestData } from "./cleanup";
 
 // 이 4가지는 DB 계약 시험(sql/tests.sql)이 이미 증명한 불변식을, 그 제약을 실제로
 // 호출하는 Next.js 라우트 레이어에서도 다시 확인한다. DB가 맞다는 건 이미 알고 있고,
 // 여기서 보는 건 "라우트 코드가 그 DB 제약을 올바르게 호출·해석하는가"다.
+//
+// 주의: 이 시험은 실행 중인 서버(= bilim_dev, 사람이 보는 그 DB)에 실제로 데이터를
+// 만든다. beforeAll/afterAll에서 반드시 치운다 — 한 번 안 치워서 "테스트 물품"이
+// 실제 상점 목록에 남는 사고가 있었다.
 describe("대여 API 핵심 계약", () => {
   let owner: TestUser;
   let renter: TestUser;
   let itemId: string;
 
   beforeAll(async () => {
+    await cleanupTestData(); // 이전 실행이 비정상 종료해 남긴 찌꺼기 선제 정리
     owner = await signUp("owner", "테스트빌려주는사람");
     renter = await signUp("renter", "테스트빌리는사람");
     itemId = await publishItem(owner);
+  }, 30_000);
+
+  afterAll(async () => {
+    await cleanupTestData();
   }, 30_000);
 
   it("AC-04-3: 자기 물품은 빌릴 수 없다(E_SELF_RENTAL)", async () => {
