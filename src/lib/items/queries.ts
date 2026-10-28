@@ -129,3 +129,35 @@ export async function getItemDetail(id: string): Promise<ItemDetail | null> {
 
   return { ...item, photos };
 }
+
+export interface MyItemRow {
+  id: string;
+  title: string;
+  status: string;
+  dailyFee: number;
+  thumbnailKey: string | null;
+}
+
+export async function listMyItems(ownerId: string): Promise<MyItemRow[]> {
+  const rows = await db
+    .selectFrom("items")
+    .select(["id", "title", "status", "dailyFee"])
+    .where("ownerId", "=", ownerId)
+    .orderBy("createdAt", "desc")
+    .execute();
+
+  if (rows.length === 0) return [];
+  const ids = rows.map((r) => r.id);
+  const photos = await db
+    .selectFrom("itemPhotos")
+    .select(["itemId", "storageKey", "position"])
+    .where("itemId", "in", ids)
+    .orderBy("position", "asc")
+    .execute();
+  const thumbByItem = new Map<string, string>();
+  for (const p of photos) {
+    if (!thumbByItem.has(p.itemId)) thumbByItem.set(p.itemId, p.storageKey);
+  }
+
+  return rows.map((r) => ({ ...r, thumbnailKey: thumbByItem.get(r.id) ?? null }));
+}
