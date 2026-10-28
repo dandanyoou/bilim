@@ -29,7 +29,7 @@ export default async function NewRentalPage({ searchParams }: PageProps) {
         itemId={item.id}
         dailyFee={item.dailyFee}
         deposit={item.deposit}
-        buyoutPrice={item.buyoutPrice}
+        baseBuyoutPrice={item.buyoutPrice}
       />
     </div>
   );

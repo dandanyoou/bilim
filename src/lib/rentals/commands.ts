@@ -1,7 +1,7 @@
 import { sql } from "kysely";
 import { db } from "@/lib/db/client";
 import { apiError } from "@/lib/api/errors";
-import { calcRentalFee, calcPlatformFee } from "@/lib/money";
+import { calcRentalFee, calcPlatformFee, calcBuyoutPrice } from "@/lib/money";
 import { mockAuthorize } from "@/lib/adapters/paymentGateway";
 import type { ReadyPhoto } from "@/components/uploads/PhotoPicker";
 
@@ -46,6 +46,7 @@ export async function requestRental(input: {
   const end = new Date(start.getTime() + input.days * 24 * 60 * 60 * 1000);
   const rentalFee = calcRentalFee(item.dailyFee, input.days);
   const platformFee = calcPlatformFee(rentalFee);
+  const buyoutPriceSnapshot = calcBuyoutPrice(item.buyoutPrice, item.dailyFee, input.days);
 
   return db
     .insertInto("rentals")
@@ -58,7 +59,7 @@ export async function requestRental(input: {
       dailyFeeSnapshot: item.dailyFee,
       rentalFee,
       depositSnapshot: item.deposit,
-      buyoutPriceSnapshot: item.buyoutPrice,
+      buyoutPriceSnapshot,
       platformFee,
     })
     .returningAll()
