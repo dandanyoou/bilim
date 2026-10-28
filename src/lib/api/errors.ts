@@ -56,9 +56,22 @@ interface PgLikeError {
   constraint?: string;
 }
 
+interface ZodLikeError {
+  name?: string;
+  issues?: { path: (string | number)[]; message: string }[];
+}
+
 /** DB에서 올라온 에러를 ApiError로 변환한다. SSAD 3.3.1의 매핑표를 그대로 따른다. */
 export function fromPgError(err: unknown): ApiError {
   if (err instanceof ApiError) return err;
+
+  const zod = err as ZodLikeError;
+  if (zod?.name === "ZodError" && zod.issues) {
+    return apiError("E_VALIDATION", "입력 값을 확인해 주세요.", {
+      issues: zod.issues.map((i) => ({ field: i.path.join("."), message: i.message })),
+    });
+  }
+
   const pg = err as PgLikeError;
 
   if (pg?.code === "23P01") {
