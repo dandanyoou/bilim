@@ -5,6 +5,7 @@ import { Marquee } from "@/components/marketing/Marquee";
 import { PhotoWall } from "@/components/marketing/PhotoWall";
 import { Reveal } from "@/components/motion/Reveal";
 import { TiltCard } from "@/components/motion/TiltCard";
+import { FullPageScrollController } from "@/components/motion/FullPageScrollController";
 import { listShowcasePhotos } from "@/lib/items/queries";
 
 const PAIN_POINTS = [
@@ -38,6 +39,7 @@ export default async function Home() {
 
   return (
     <div className="scroll-sections">
+      <FullPageScrollController />
       <section className="scroll-section grid items-center gap-10 px-6 py-16 sm:py-0 lg:grid-cols-[1.1fr_1fr] lg:gap-6 lg:px-10">
         <div className="flex flex-col items-start text-left">
           <p className="mb-4 text-sm tracking-widest text-ink-soft uppercase">

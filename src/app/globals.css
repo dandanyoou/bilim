@@ -43,9 +43,10 @@ body {
   color: var(--color-ink);
 }
 
-/* knot 스타일 랜딩 전용 스크롤-스냅 섹션 */
+/* knot 스타일 랜딩 전용 스크롤-스냅 섹션. mandatory로 둬서 JS 컨트롤러가 없는
+   경우(터치·reduced-motion)에도 섹션 경계에 딱 멈추게 한다. */
 .scroll-sections {
-  scroll-snap-type: y proximity;
+  scroll-snap-type: y mandatory;
 }
 .scroll-section {
   scroll-snap-align: start;
