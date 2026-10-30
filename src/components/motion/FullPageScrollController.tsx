@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { animate } from "motion";
 
 /**
- * knot처럼 "스크롤 한 번 = 한 섹션"을 만든다. CSS scroll-snap(mandatory)만으로는
- * 트랙패드로 세게 밀면 두 섹션을 건너뛸 수 있어서, 휠 입력을 가로채 정확히 한
- * 섹션만 이동시키고 다음 입력은 애니메이션이 끝날 때까지 잠근다.
+ * knot처럼 "스크롤 한 번 = 한 섹션"을 만든다. 첫 페이지(히어로)를 벗어날 때는
+ * 평범하게 스크롤되고, 그 다음 섹션부터는 스프링 물리로 자석처럼 확 끌어당겨
+ * 붙는다 — stiffness를 높게, damping은 낮게 둬서 빠르게 끌려가다 턱 걸리는
+ * 느낌을 낸다. 휠 입력을 가로채 정확히 한 섹션만 이동시키고, 애니메이션이
+ * 완전히 끝날 때까지 다음 입력을 잠근다(세게 스크롤해도 한 섹션만 넘어감).
  * 터치스크린·prefers-reduced-motion에서는 그냥 둔다 — 강제로 페이지를 넘기는
  * 느낌이 모바일 스크롤이나 모션 민감도 설정과는 안 맞는다.
  */
@@ -41,15 +44,39 @@ export function FullPageScrollController() {
 
     currentIndex = nearestIndex();
 
+    function unlockAfter(ms: number) {
+      window.setTimeout(() => {
+        locked = false;
+      }, ms);
+    }
+
     function goTo(index: number) {
       const clamped = Math.max(0, Math.min(sections.length - 1, index));
       if (clamped === currentIndex) return;
+      const fromIndex = currentIndex;
       locked = true;
       currentIndex = clamped;
-      sections[clamped].scrollIntoView({ behavior: "smooth", block: "start" });
-      window.setTimeout(() => {
+
+      if (fromIndex === 0) {
+        // 첫 페이지(히어로) 바로 다음 전환만 평범한 스크롤로 둔다.
+        sections[clamped].scrollIntoView({ behavior: "smooth", block: "start" });
+        unlockAfter(650);
+        return;
+      }
+
+      const targetTop = sections[clamped].offsetTop;
+      const controls = animate(window.scrollY, targetTop, {
+        type: "spring",
+        stiffness: 300,
+        damping: 26,
+        restDelta: 0.5,
+        onUpdate: (v) => window.scrollTo(0, v),
+      });
+      controls.then(() => {
         locked = false;
-      }, 650);
+      });
+      // 스프링이 예상보다 오래 걸려도(resize 등) 영원히 안 풀리는 일은 없게 안전장치.
+      unlockAfter(1800);
     }
 
     function onWheel(e: WheelEvent) {
